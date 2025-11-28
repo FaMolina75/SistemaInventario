@@ -1,0 +1,61 @@
+﻿<Window x:Class="InvemtarioHadware.Vistas.GestionUbicaciones"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Gestión de Ubicaciones" Height="400" Width="600" WindowStartupLocation="CenterScreen">
+
+    <Grid Margin="10">
+        <TextBlock Text="Control de Sedes y Ubicaciones" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+
+        <TabControl Margin="0,30,0,0">
+
+            <TabItem Header="Sedes (Edificios)">
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                        <Label Content="Nombre de la Sede:"/>
+                        <TextBox x:Name="txtSede" Height="25" Margin="0,0,0,10"/>
+                        <Button Content="AGREGAR SEDE" Background="#E91E63" Foreground="White" Height="30" Click="btnSede_Click"/>
+                    </StackPanel>
+
+                    <DataGrid x:Name="dgSedes" Grid.Column="1" AutoGenerateColumns="False" IsReadOnly="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="ID" Binding="{Binding idSede}" Width="40"/>
+                            <DataGridTextColumn Header="Sede" Binding="{Binding NombreSede}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Ubicaciones (Oficinas)">
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="220"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                        <Label Content="Nombre Ubicación/Aula:"/>
+                        <TextBox x:Name="txtUbicacion" Height="25" Margin="0,0,0,5"/>
+
+                        <Label Content="Pertenece a la Sede:"/>
+                        <ComboBox x:Name="cbSede" Height="25" Margin="0,0,0,15" DisplayMemberPath="NombreSede" SelectedValuePath="idSede"/>
+
+                        <Button Content="GUARDAR UBICACIÓN" Background="#9C27B0" Foreground="White" Height="30" Click="btnUbicacion_Click"/>
+                    </StackPanel>
+
+                    <DataGrid x:Name="dgUbicaciones" Grid.Column="1" AutoGenerateColumns="False" IsReadOnly="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Ubicación" Binding="{Binding NombreUbicacion}" Width="*"/>
+                            <DataGridTextColumn Header="Sede" Binding="{Binding NombreSede}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+        </TabControl>
+    </Grid>
+</Window>

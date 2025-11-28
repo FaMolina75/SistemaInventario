@@ -1,0 +1,87 @@
+﻿<Window x:Class="InvemtarioHadware.Vistas.GestionCatalogos"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Catálogos del Sistema" Height="450" Width="700" WindowStartupLocation="CenterScreen">
+
+    <Grid Margin="10">
+        <TextBlock Text="Gestión de Catálogos" FontWeight="Bold" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+
+        <TabControl Margin="0,30,0,0">
+
+            <TabItem Header="Marcas">
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                        <Label Content="Nueva Marca:"/>
+                        <TextBox x:Name="txtMarca" Height="25" Margin="0,0,0,10"/>
+                        <Button Content="AGREGAR MARCA" Background="#009688" Foreground="White" Height="30" Click="btnMarca_Click"/>
+                    </StackPanel>
+
+                    <DataGrid x:Name="dgMarcas" Grid.Column="1" AutoGenerateColumns="False" IsReadOnly="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="ID" Binding="{Binding idMarca}" Width="50"/>
+                            <DataGridTextColumn Header="Marca" Binding="{Binding NombreMarca}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Tipos de Hardware">
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                        <Label Content="Nuevo Tipo:"/>
+                        <TextBox x:Name="txtTipo" Height="25" Margin="0,0,0,10"/>
+                        <Button Content="AGREGAR TIPO" Background="#673AB7" Foreground="White" Height="30" Click="btnTipo_Click"/>
+                    </StackPanel>
+
+                    <DataGrid x:Name="dgTipos" Grid.Column="1" AutoGenerateColumns="False" IsReadOnly="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="ID" Binding="{Binding idTipoHardware}" Width="50"/>
+                            <DataGridTextColumn Header="Tipo" Binding="{Binding NombreTipo}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Modelos">
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="250"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                        <Label Content="Nombre del Modelo:"/>
+                        <TextBox x:Name="txtModelo" Height="25" Margin="0,0,0,5"/>
+
+                        <Label Content="Marca:"/>
+                        <ComboBox x:Name="cbMarcaModelo" Height="25" Margin="0,0,0,5" DisplayMemberPath="NombreMarca" SelectedValuePath="idMarca"/>
+
+                        <Label Content="Tipo:"/>
+                        <ComboBox x:Name="cbTipoModelo" Height="25" Margin="0,0,0,15" DisplayMemberPath="NombreTipo" SelectedValuePath="idTipoHardware"/>
+
+                        <Button Content="GUARDAR MODELO" Background="#FF9800" Foreground="White" Height="30" Click="btnModelo_Click"/>
+                    </StackPanel>
+
+                    <DataGrid x:Name="dgModelos" Grid.Column="1" AutoGenerateColumns="False" IsReadOnly="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Modelo" Binding="{Binding NombreModelo}" Width="*"/>
+                            <DataGridTextColumn Header="Marca" Binding="{Binding NombreMarca}" Width="100"/>
+                            <DataGridTextColumn Header="Tipo" Binding="{Binding NombreTipo}" Width="100"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+        </TabControl>
+    </Grid>
+</Window>
