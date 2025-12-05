@@ -1,35 +1,55 @@
 ﻿<Window x:Class="InvemtarioHadware.Vistas.GestionUbicaciones"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Gestión de Ubicaciones" Height="400" Width="600" WindowStartupLocation="CenterScreen">
+        Title="Gestión de Ubicaciones" Height="450" Width="700" WindowStartupLocation="CenterScreen">
 
     <Grid Margin="10">
         <TextBlock Text="Control de Sedes y Ubicaciones" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" Margin="0,0,0,15"/>
 
         <TabControl Margin="0,30,0,0">
 
+            <!-- PESTAÑA SEDES -->
             <TabItem Header="Sedes (Edificios)">
                 <Grid Margin="10">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="220"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
+                    <!-- Formulario Sede -->
                     <StackPanel Grid.Column="0" Margin="0,0,10,0">
                         <Label Content="Nombre de la Sede:"/>
                         <TextBox x:Name="txtSede" Height="25" Margin="0,0,0,10"/>
-                        <Button Content="AGREGAR SEDE" Background="#E91E63" Foreground="White" Height="30" Click="btnSede_Click"/>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button x:Name="btnGuardarSede" Content="GUARDAR" Background="#E91E63" Foreground="White" Height="30" Width="100" Margin="0,0,5,0" Click="btnGuardarSede_Click"/>
+                            <Button x:Name="btnCancelarSede" Content="CANCELAR" Background="#757575" Foreground="White" Height="30" Width="80" Click="btnCancelarSede_Click" Visibility="Collapsed"/>
+                        </StackPanel>
                     </StackPanel>
 
-                    <DataGrid x:Name="dgSedes" Grid.Column="1" AutoGenerateColumns="False" IsReadOnly="True">
+                    <!-- Tabla Sedes -->
+                    <DataGrid x:Name="dgSedes" Grid.Column="1" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="ID" Binding="{Binding idSede}" Width="40"/>
                             <DataGridTextColumn Header="Sede" Binding="{Binding NombreSede}" Width="*"/>
+
+                            <!-- Botones de Acción -->
+                            <DataGridTemplateColumn Header="Acciones" Width="140">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Content="Editar" Margin="2" Click="btnEditarSede_Click" Background="#2196F3" Foreground="White"/>
+                                            <Button Content="Eliminar" Margin="2" Click="btnEliminarSede_Click" Background="#F44336" Foreground="White"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>
             </TabItem>
 
+            <!-- PESTAÑA UBICACIONES -->
             <TabItem Header="Ubicaciones (Oficinas)">
                 <Grid Margin="10">
                     <Grid.ColumnDefinitions>
@@ -37,6 +57,7 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
+                    <!-- Formulario Ubicación -->
                     <StackPanel Grid.Column="0" Margin="0,0,10,0">
                         <Label Content="Nombre Ubicación/Aula:"/>
                         <TextBox x:Name="txtUbicacion" Height="25" Margin="0,0,0,5"/>
@@ -44,13 +65,30 @@
                         <Label Content="Pertenece a la Sede:"/>
                         <ComboBox x:Name="cbSede" Height="25" Margin="0,0,0,15" DisplayMemberPath="NombreSede" SelectedValuePath="idSede"/>
 
-                        <Button Content="GUARDAR UBICACIÓN" Background="#9C27B0" Foreground="White" Height="30" Click="btnUbicacion_Click"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button x:Name="btnGuardarUbicacion" Content="GUARDAR" Background="#9C27B0" Foreground="White" Height="30" Width="100" Margin="0,0,5,0" Click="btnGuardarUbicacion_Click"/>
+                            <Button x:Name="btnCancelarUbicacion" Content="CANCELAR" Background="#757575" Foreground="White" Height="30" Width="80" Click="btnCancelarUbicacion_Click" Visibility="Collapsed"/>
+                        </StackPanel>
                     </StackPanel>
 
-                    <DataGrid x:Name="dgUbicaciones" Grid.Column="1" AutoGenerateColumns="False" IsReadOnly="True">
+                    <!-- Tabla Ubicaciones -->
+                    <DataGrid x:Name="dgUbicaciones" Grid.Column="1" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
                         <DataGrid.Columns>
+                            <DataGridTextColumn Header="ID" Binding="{Binding idUbicacion}" Width="40"/>
                             <DataGridTextColumn Header="Ubicación" Binding="{Binding NombreUbicacion}" Width="*"/>
                             <DataGridTextColumn Header="Sede" Binding="{Binding NombreSede}" Width="*"/>
+
+                            <!-- Botones de Acción -->
+                            <DataGridTemplateColumn Header="Acciones" Width="140">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Content="Editar" Margin="2" Click="btnEditarUbicacion_Click" Background="#2196F3" Foreground="White"/>
+                                            <Button Content="Eliminar" Margin="2" Click="btnEliminarUbicacion_Click" Background="#F44336" Foreground="White"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>

@@ -116,6 +116,9 @@
     <Compile Include="Vistas\GestionCatalogos.xaml.cs">
       <DependentUpon>GestionCatalogos.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Vistas\GestionEmpleados.xaml.cs">
+      <DependentUpon>GestionEmpleados.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Vistas\GestionHardware.xaml.cs">
       <DependentUpon>GestionHardware.xaml</DependentUpon>
     </Compile>
@@ -156,6 +159,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Vistas\GestionCatalogos.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Vistas\GestionEmpleados.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

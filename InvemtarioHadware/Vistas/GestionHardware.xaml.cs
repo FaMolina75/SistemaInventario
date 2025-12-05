@@ -3,8 +3,7 @@ using System.Data;
 using System.Windows;
 using System.Windows.Controls;
 using MySql.Data.MySqlClient;
-using InvemtarioHadware.Data; // Ahora sí reconocerá esto
-
+using InvemtarioHadware.Data;
 
 namespace InvemtarioHadware.Vistas
 {
@@ -15,9 +14,18 @@ namespace InvemtarioHadware.Vistas
         public GestionHardware()
         {
             InitializeComponent();
+            // RESTRICCIÓN DE FECHAS (CORREGIDO):
+            // Lógica estándar de compra:
+            // - Permitir el pasado (para registrar compras antiguas).
+            // - Bloquear el futuro (DisplayDateEnd = Hoy), ya que no puedes comprar mañana.
+            dpFechaCompra.DisplayDateEnd = DateTime.Now;
             CargarCombos();
             CargarGrid();
         }
+
+        // ==========================================
+        // ============ CARGAR DATOS ================
+        // ==========================================
 
         private void CargarCombos()
         {
@@ -51,10 +59,12 @@ namespace InvemtarioHadware.Vistas
                 ConexionDB db = new ConexionDB();
                 using (MySqlConnection con = db.GetConnection())
                 {
-                    string query = @"SELECT h.idHardware, h.Serie, m.NombreModelo, u.NombreUbicacion, h.Estado, h.FechaCompra, h.idModelo, h.idUbicacion 
+                    string query = @"SELECT h.idHardware, h.Serie, m.NombreModelo, u.NombreUbicacion, 
+                                     h.Estado, h.FechaCompra, h.idModelo, h.idUbicacion 
                                      FROM Hardware h
                                      JOIN Modelos m ON h.idModelo = m.idModelo
-                                     JOIN Ubicaciones u ON h.idUbicacion = u.idUbicacion";
+                                     JOIN Ubicaciones u ON h.idUbicacion = u.idUbicacion
+                                     ORDER BY h.Serie";
                     MySqlDataAdapter da = new MySqlDataAdapter(query, con);
                     DataTable dt = new DataTable();
                     da.Fill(dt);
@@ -67,32 +77,51 @@ namespace InvemtarioHadware.Vistas
             }
         }
 
+        // ==========================================
+        // ======== CREAR O ACTUALIZAR ==============
+        // ==========================================
+
         private void btnGuardar_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txtSerie.Text) || cbModelo.SelectedValue == null || cbUbicacion.SelectedValue == null)
             {
-                MessageBox.Show("Completa todos los campos.");
+                MessageBox.Show("Completa los campos obligatorios (Serie, Modelo, Ubicación).");
                 return;
             }
+
             try
             {
                 ConexionDB db = new ConexionDB();
                 using (MySqlConnection con = db.GetConnection())
                 {
-                    string query = (idHardwareSeleccionado == 0)
-                        ? "INSERT INTO Hardware (Serie, idModelo, idUbicacion, FechaCompra, Estado) VALUES (@serie, @modelo, @ubicacion, @fecha, @estado)"
-                        : "UPDATE Hardware SET Serie=@serie, idModelo=@modelo, idUbicacion=@ubicacion, FechaCompra=@fecha, Estado=@estado WHERE idHardware=@id";
+                    string query = "";
+                    MySqlCommand cmd = new MySqlCommand();
+                    cmd.Connection = con;
 
-                    MySqlCommand cmd = new MySqlCommand(query, con);
-                    cmd.Parameters.AddWithValue("@serie", txtSerie.Text);
-                    cmd.Parameters.AddWithValue("@modelo", cbModelo.SelectedValue);
-                    cmd.Parameters.AddWithValue("@ubicacion", cbUbicacion.SelectedValue);
-                    cmd.Parameters.AddWithValue("@fecha", dpFechaCompra.SelectedDate ?? DateTime.Now);
-                    cmd.Parameters.AddWithValue("@estado", cbEstado.Text);
-                    if (idHardwareSeleccionado > 0) cmd.Parameters.AddWithValue("@id", idHardwareSeleccionado);
+                    if (idHardwareSeleccionado == 0)
+                    {
+                        // CREAR NUEVO HARDWARE - Incluye fecha
+                        query = "INSERT INTO Hardware (Serie, idModelo, idUbicacion, FechaCompra, Estado) VALUES (@serie, @modelo, @ubicacion, @fecha, @estado)";
+                        cmd.Parameters.AddWithValue("@serie", txtSerie.Text.Trim());
+                        cmd.Parameters.AddWithValue("@modelo", cbModelo.SelectedValue);
+                        cmd.Parameters.AddWithValue("@ubicacion", cbUbicacion.SelectedValue);
+                        cmd.Parameters.AddWithValue("@fecha", dpFechaCompra.SelectedDate ?? DateTime.Now);
+                        cmd.Parameters.AddWithValue("@estado", cbEstado.Text);
+                    }
+                    else
+                    {
+                        // ACTUALIZAR HARDWARE - NO modifica la fecha (seguridad)
+                        query = "UPDATE Hardware SET Serie=@serie, idModelo=@modelo, idUbicacion=@ubicacion, Estado=@estado WHERE idHardware=@id";
+                        cmd.Parameters.AddWithValue("@serie", txtSerie.Text.Trim());
+                        cmd.Parameters.AddWithValue("@modelo", cbModelo.SelectedValue);
+                        cmd.Parameters.AddWithValue("@ubicacion", cbUbicacion.SelectedValue);
+                        cmd.Parameters.AddWithValue("@estado", cbEstado.Text);
+                        cmd.Parameters.AddWithValue("@id", idHardwareSeleccionado);
+                    }
 
+                    cmd.CommandText = query;
                     cmd.ExecuteNonQuery();
-                    MessageBox.Show("Guardado.");
+                    MessageBox.Show(idHardwareSeleccionado == 0 ? "Hardware registrado correctamente" : "Hardware actualizado correctamente");
                     LimpiarFormulario();
                     CargarGrid();
                 }
@@ -100,43 +129,76 @@ namespace InvemtarioHadware.Vistas
             catch (Exception ex) { MessageBox.Show("Error: " + ex.Message); }
         }
 
+        // ==========================================
+        // ============== EDITAR ====================
+        // ==========================================
+
+        private void btnEditar_Click(object sender, RoutedEventArgs e)
+        {
+            DataRowView row = (DataRowView)((Button)sender).DataContext;
+            idHardwareSeleccionado = Convert.ToInt32(row["idHardware"]);
+            txtSerie.Text = row["Serie"].ToString();
+            cbModelo.SelectedValue = row["idModelo"];
+            cbUbicacion.SelectedValue = row["idUbicacion"];
+            cbEstado.Text = row["Estado"].ToString();
+            
+            if (row["FechaCompra"] != DBNull.Value)
+                dpFechaCompra.SelectedDate = Convert.ToDateTime(row["FechaCompra"]);
+            else
+                dpFechaCompra.SelectedDate = null;
+
+            // Bloquear edición de fecha (seguridad)
+            dpFechaCompra.IsEnabled = false;
+
+            btnGuardar.Content = "ACTUALIZAR";
+            btnCancelar.Visibility = Visibility.Visible;
+        }
+
+        // ==========================================
+        // ============== ELIMINAR ==================
+        // ==========================================
+
         private void btnEliminar_Click(object sender, RoutedEventArgs e)
         {
-            if (idHardwareSeleccionado == 0) return;
-            if (MessageBox.Show("¿Eliminar?", "Confirmar", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            DataRowView row = (DataRowView)((Button)sender).DataContext;
+            int id = Convert.ToInt32(row["idHardware"]);
+            string serie = row["Serie"].ToString();
+
+            if (MessageBox.Show($"¿Eliminar el hardware con serie '{serie}'?", "Confirmar",
+                MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
             {
                 try
                 {
                     ConexionDB db = new ConexionDB();
                     using (MySqlConnection con = db.GetConnection())
                     {
-                        MySqlCommand cmd = new MySqlCommand("DELETE FROM Hardware WHERE idHardware=@id", con);
-                        cmd.Parameters.AddWithValue("@id", idHardwareSeleccionado);
+                        string query = "DELETE FROM Hardware WHERE idHardware = @id";
+                        MySqlCommand cmd = new MySqlCommand(query, con);
+                        cmd.Parameters.AddWithValue("@id", id);
                         cmd.ExecuteNonQuery();
+
+                        // Resetear AUTO_INCREMENT
+                        ResetearAutoIncrement(con, "Hardware", "idHardware");
+
+                        MessageBox.Show("Hardware eliminado");
                         LimpiarFormulario();
                         CargarGrid();
                     }
                 }
-                catch (Exception ex) { MessageBox.Show("Error: " + ex.Message); }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error al eliminar: " + ex.Message);
+                }
             }
         }
 
-        private void btnLimpiar_Click(object sender, RoutedEventArgs e)
+        // ==========================================
+        // ============== CANCELAR ==================
+        // ==========================================
+
+        private void btnCancelar_Click(object sender, RoutedEventArgs e)
         {
             LimpiarFormulario();
-        }
-
-        private void dgHardware_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (dgHardware.SelectedItem is DataRowView fila)
-            {
-                idHardwareSeleccionado = Convert.ToInt32(fila["idHardware"]);
-                txtSerie.Text = fila["Serie"].ToString();
-                cbModelo.SelectedValue = fila["idModelo"];
-                cbUbicacion.SelectedValue = fila["idUbicacion"];
-                cbEstado.Text = fila["Estado"].ToString();
-                if (fila["FechaCompra"] != DBNull.Value) dpFechaCompra.SelectedDate = Convert.ToDateTime(fila["FechaCompra"]);
-            }
         }
 
         private void LimpiarFormulario()
@@ -145,8 +207,39 @@ namespace InvemtarioHadware.Vistas
             cbModelo.SelectedIndex = -1;
             cbUbicacion.SelectedIndex = -1;
             dpFechaCompra.SelectedDate = null;
+            dpFechaCompra.IsEnabled = true; // Reactivar el control de fecha
             cbEstado.SelectedIndex = 0;
             idHardwareSeleccionado = 0;
+            btnGuardar.Content = "GUARDAR";
+            btnCancelar.Visibility = Visibility.Collapsed;
+        }
+
+        // ==========================================
+        // ========== MÉTODOS AUXILIARES ============
+        // ==========================================
+
+        private void ResetearAutoIncrement(MySqlConnection con, string tabla, string columnaId)
+        {
+            try
+            {
+                string queryMax = $"SELECT MAX({columnaId}) FROM {tabla}";
+                MySqlCommand cmdMax = new MySqlCommand(queryMax, con);
+                object resultado = cmdMax.ExecuteScalar();
+
+                int nuevoAutoIncrement = 1;
+                if (resultado != DBNull.Value && resultado != null)
+                {
+                    nuevoAutoIncrement = Convert.ToInt32(resultado) + 1;
+                }
+
+                string queryReset = $"ALTER TABLE {tabla} AUTO_INCREMENT = {nuevoAutoIncrement}";
+                MySqlCommand cmdReset = new MySqlCommand(queryReset, con);
+                cmdReset.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error al resetear AUTO_INCREMENT: {ex.Message}");
+            }
         }
     }
 }
